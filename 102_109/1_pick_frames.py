@@ -13,7 +13,7 @@ scan, pos = 102, 109
 begin, end = 90, -1
 
 import sys, os
-PATH = '../..'
+PATH = sys.argv[1]
 merlin_base = os.path.join(PATH, 'data1/scan_%04d_merlin_0000.hdf5')
 mask_file = os.path.join(PATH, 'data1/merlin_mask_190222_14keV.h5')
 

@@ -9,7 +9,7 @@ plt.ion()
 
 from bcdiass.utils import C, M
 from bcdiass.utils import generate_initial, generate_envelope, pre_align_rolls
-from bcdiass.utils import ProgressPlot, rectify_sample_sample
+from bcdiass.utils import ProgressPlot, rectify_sample
 
 for subset in (10, 1, 0):
 

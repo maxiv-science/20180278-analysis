@@ -1,7 +1,10 @@
 This collection of scripts assembles and phases the spontaneous rocking data collected at NanoMAX during
 
 * Experiment 20180278 Jun 2019 (`data1`) and
-* Follow-up in-house time 20200322 (`data2`)
+* Follow-up in-house time 20200322 (`data2`).
+
+The analysis is described in
+> A. Björling et al, "Three-dimensional coherent Bragg imaging of spontaneously rotating nanoparticles", in preparation (2020).
 
 The data are deposited separately in a root folder referred to as PATH. There are nine particle hits analyzed in total four in `data1` and five in `data2`.
 

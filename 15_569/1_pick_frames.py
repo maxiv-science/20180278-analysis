@@ -13,9 +13,9 @@ scan, pos = 15, 569
 begin, end = 0, 560
 
 import sys, os
-PATH = sys.argv[1]
-filename = os.path.join(PATH, 'data2/%06u.h5' % scan)
-mask_file = os.path.join(PATH, 'data2/merlin_mask_200430_8keV.h5')
+DPATH = sys.argv[1]
+filename = os.path.join(DPATH, 'data2/%06u.h5' % scan)
+mask_file = os.path.join(DPATH, 'data2/merlin_mask_200430_8keV.h5')
 
 # load and mask data
 with h5py.File(mask_file, 'r') as fp:

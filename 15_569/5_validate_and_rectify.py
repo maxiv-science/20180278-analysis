@@ -93,11 +93,13 @@ qstep = 3*dq1 # the size of a q bin - arbitrary
 qbins3d = (q // qstep).astype(int)
 qbins2d = qbins3d[N//2]
 fsc = []
+nri = []
 for i in np.unique(qbins3d):
     shell = np.where(qbins3d==i)
     val = np.sum(f0[shell] * f1[shell].conj())
     val /= np.sqrt(np.sum(np.abs(f0[shell])**2))
     val /= np.sqrt(np.sum(np.abs(f1[shell])**2))
+    nri.append(len(shell[0]))
     fsc.append(val)
 #    ring = np.where(qbins2d==i)
 plt.figure()
@@ -117,7 +119,7 @@ resolutions = (2, 5, 8, 10, 15, 12, 20, 30, 50)
 a2.set_xticks([2*np.pi/dr for dr in resolutions])
 a2.set_xticklabels(resolutions)
 a2.set_xlim(a1.get_xlim())
-np.savez('validation.npz', q=x, fsc=fsc)
+np.savez('validation.npz', q=x, fsc=fsc, nri=nri)
 #a1.legend()
 
 # rectify the full reconstruction, save and plot

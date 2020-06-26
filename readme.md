@@ -13,7 +13,7 @@ Each particle hit is analyzed in its own folder, where the following scripts are
 * `1_pick_frames.py $DPATH` picks a specific CDI hit and crops the data.
 * `2_assemble.py` does the diffraction volume assembly.
 * `3_prepare_pynx.py` crops and scales the model volume for phasing.
-* `4_reconstruct` or `4_reconstructr.sbatch` does the phasing with PyNX
+* `4_reconstructr.sbatch` does the phasing with PyNX as SLURM jobs, but its pynx commands can be run in a normal terminal with the correct environment.
 * `5_validate and rectify.py` resamples the particle on an orthogonal grid and does the FSV analysis.
 
 These scripts depend on the [bcdi-assemble](https://github.com/maxiv-science/bcdi-assemble) library for assembly, and on [PyNX](http://ftp.esrf.fr/pub/scisoft/PyNX/) for phasing.

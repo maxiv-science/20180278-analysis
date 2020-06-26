@@ -71,6 +71,6 @@ for subset in (10, 1, 0):
     # the outermost q3 slices contain everything that couldn't be assigned well.
     oldshape = W.shape[0]
     Q3 = W.shape[0] / oldshape * Q3
-    W_ortho, Qnew = rectify_sample_sample(W, (Q3, Q12, Q12), theta)
+    W_ortho, Qnew = rectify_sample(W, (Q3, Q12, Q12), theta)
 
     np.savez('assembled_%u.npz'%subset, W=W, W_ortho=W_ortho, Pjlk=Pjlk, rolls=rolls, Q_ortho=Qnew, Q=(Q3, Q12, Q12))

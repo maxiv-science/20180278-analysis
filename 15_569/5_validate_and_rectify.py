@@ -8,7 +8,8 @@ with aspec ratio 1:1:1, for easier visualization.
 import matplotlib.pyplot as plt
 import numpy as np
 import h5py
-from bcdiass.utils import rectify_sample
+from diffassemble.utils import rectify_sample
+import os
 #plt.ion()
 
 # shifting makes a difference so think about aligning
@@ -25,10 +26,19 @@ def load(fn, N, cutoff=.1):
     com = np.sum(np.indices(p.shape) * np.abs(p), axis=(1,2,3)) / np.sum(np.abs(p))
     com = np.round(com).astype(int)
     p = p[com[0]-N//2:com[0]+N//2,
-            com[1]-N//2:com[1]+N//2,
-            com[2]-N//2:com[2]+N//2,]
+          com[1]-N//2:com[1]+N//2,
+          com[2]-N//2:com[2]+N//2,]
     p[:] = p * np.exp(-1j * np.angle(p[N//2, N//2, N//2]))
-    return p
+    # we also have to make a mask to properly be able to count the pixels
+    diff = np.load(os.path.join(os.path.dirname(fn), 'prepared_10.npz'))['data']
+    diff = diff[com[0]-N//2:com[0]+N//2,
+                com[1]-N//2:com[1]+N//2,
+                com[2]-N//2:com[2]+N//2,]
+    mask1d = np.sign(np.max(diff, axis=(1,2)))
+    mask = np.ones_like(diff)
+    mask = mask * mask1d.reshape((N, 1, 1))
+    print(mask1d.shape, mask.shape)
+    return p, mask
 
 # load the q space scales and work out the new q range after cropping etc
 N = 100
@@ -41,12 +51,12 @@ Q3, Q1, Q2 = np.array((dq3, dq1, dq2)) * N_recons # full q range used in the rec
 #   - if qmax is half the q range (origin to edge) then res is the full period resolution
 #   - if qmax is the full q range (edge to edge) then res is the pixel size
 dr3, dr1, dr2 = (2 * np.pi / q for q in (Q3, Q1, Q2)) # half-period res (pixel size)
-p0 = load(folder+'modes_0.h5', N)
-p1 = load(folder+'modes_1.h5', N)
+p0, mask = load(folder+'modes_0.h5', N)
+p1, mask = load(folder+'modes_1.h5', N)
 
-# threshold the particles
-p0[np.abs(p0) < np.abs(p0).max()*.25] = 0
-p1[np.abs(p1) < np.abs(p1).max()*.25] = 0
+# threshold the volumes
+p0[np.abs(p0) < .25 * np.abs(p0).max()] = 0
+p1[np.abs(p1) < .25 * np.abs(p1).max()] = 0
 
 # plot the input data and FT:s
 fig, ax = plt.subplots(ncols=2, nrows=2)
@@ -89,29 +99,26 @@ dq = np.array((Q3, Q1, Q2)) / N
 # 3d q components:
 q3d = (np.indices(p0.shape) - N//2) * dq.reshape((3,1,1,1))
 q = np.sqrt(np.sum(q3d**2, axis=0)) # q is now |q|
-qstep = 3*dq1 # the size of a q bin - arbitrary
+qstep = 2.*dq1 # the size of a q bin - arbitrary
 qbins3d = (q // qstep).astype(int)
-qbins2d = qbins3d[N//2]
-fsc = []
 nri = []
+fsc = []
+mask[mask == 0] = -1
 for i in np.unique(qbins3d):
     shell = np.where(qbins3d==i)
+    masked_shell = np.where((qbins3d * mask)==i)
     val = np.sum(f0[shell] * f1[shell].conj())
     val /= np.sqrt(np.sum(np.abs(f0[shell])**2))
     val /= np.sqrt(np.sum(np.abs(f1[shell])**2))
-    nri.append(len(shell[0]))
     fsc.append(val)
-#    ring = np.where(qbins2d==i)
+    nri.append(len(masked_shell[0]))
 plt.figure()
 a1 = plt.gca()
 x = np.unique(qbins3d) * qstep * 1e-9
 a1.add_patch(plt.Rectangle(xy=(0, .143), width=x.max(), height=(.5-.143), fc=(.8,)*3))
-#imax = int(len(x) * .75)
-#a1.plot(x[:imax], fsc[:imax], label='FSC (3d)')
 a1.plot(x, fsc, label='FSC (3d)')
 a1.set_xlabel('q = $2\pi/\Delta r$  [nm-1]')
 a1.set_ylabel('Fourier shell correlation')
-#a1.set_xlim(0, 1.)
 a1.set_ylim(0, 1.1)
 a2 = plt.gca().twiny()
 a2.set_xlabel('Full-period resolution $\Delta r$  [nm]')
@@ -123,7 +130,7 @@ np.savez('validation.npz', q=x, fsc=fsc, nri=nri)
 #a1.legend()
 
 # rectify the full reconstruction, save and plot
-p = load(folder+'modes_10.h5', N)
+p, mask = load(folder+'modes_10.h5', N)
 #p = np.flip(p, axis=0)
 p, psize = rectify_sample(p, (dr3, dr1, dr2), 15.0, find_order=False) # x z y
 np.savez('rectified.npz', data=p, psize=psize)

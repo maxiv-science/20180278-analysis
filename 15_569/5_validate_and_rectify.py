@@ -8,7 +8,7 @@ with aspec ratio 1:1:1, for easier visualization.
 import matplotlib.pyplot as plt
 import numpy as np
 import h5py
-from diffassemble.utils import rectify_sample
+from bcdiass.utils import rectify_sample
 import os
 #plt.ion()
 
@@ -31,6 +31,10 @@ def load(fn, N, cutoff=.1):
     p[:] = p * np.exp(-1j * np.angle(p[N//2, N//2, N//2]))
     # we also have to make a mask to properly be able to count the pixels
     diff = np.load(os.path.join(os.path.dirname(fn), 'prepared_10.npz'))['data']
+    print(diff.shape)
+    com = np.sum(np.indices(diff.shape) * diff, axis=(1,2,3)) / np.sum(diff)
+    com = np.round(com).astype(int)
+    print(com)
     diff = diff[com[0]-N//2:com[0]+N//2,
                 com[1]-N//2:com[1]+N//2,
                 com[2]-N//2:com[2]+N//2,]
@@ -51,12 +55,14 @@ Q3, Q1, Q2 = np.array((dq3, dq1, dq2)) * N_recons # full q range used in the rec
 #   - if qmax is half the q range (origin to edge) then res is the full period resolution
 #   - if qmax is the full q range (edge to edge) then res is the pixel size
 dr3, dr1, dr2 = (2 * np.pi / q for q in (Q3, Q1, Q2)) # half-period res (pixel size)
-p0, mask = load(folder+'modes_0.h5', N)
-p1, mask = load(folder+'modes_1.h5', N)
+p0, mask = load(folder+'modes_0.h5', N, cutoff=.0)
+p1, mask = load(folder+'modes_1.h5', N, cutoff=.0)
 
 # threshold the volumes
-p0[np.abs(p0) < .25 * np.abs(p0).max()] = 0
-p1[np.abs(p1) < .25 * np.abs(p1).max()] = 0
+p0_cut = np.copy(p0)
+p1_cut = np.copy(p1)
+p0_cut[np.abs(p0) < .25 * np.abs(p0).max()] = 0
+p1_cut[np.abs(p1) < .25 * np.abs(p1).max()] = 0
 
 # plot the input data and FT:s
 fig, ax = plt.subplots(ncols=2, nrows=2)
@@ -67,6 +73,8 @@ plt.setp(ax[0, 0], xlim=[-50,50], ylim=[-50,50])
 plt.setp(ax[0, 1], xlim=[-50,50], ylim=[-50,50])
 f0 = np.fft.fftshift(np.fft.fftn(p0))
 f1 = np.fft.fftshift(np.fft.fftn(p1))
+f0_cut = np.fft.fftshift(np.fft.fftn(p0_cut))
+f1_cut = np.fft.fftshift(np.fft.fftn(p1_cut))
 ax[1, 0].imshow(np.log10(np.abs(f0[N//2])))
 ax[1, 1].imshow(np.log10(np.abs(f1[N//2])))
 fig.suptitle('input images and FT:s')
@@ -103,6 +111,7 @@ qstep = 2.*dq1 # the size of a q bin - arbitrary
 qbins3d = (q // qstep).astype(int)
 nri = []
 fsc = []
+fsc_cut = []
 mask[mask == 0] = -1
 for i in np.unique(qbins3d):
     shell = np.where(qbins3d==i)
@@ -111,12 +120,17 @@ for i in np.unique(qbins3d):
     val /= np.sqrt(np.sum(np.abs(f0[shell])**2))
     val /= np.sqrt(np.sum(np.abs(f1[shell])**2))
     fsc.append(val)
+    val = np.sum(f0_cut[shell] * f1_cut[shell].conj())
+    val /= np.sqrt(np.sum(np.abs(f0_cut[shell])**2))
+    val /= np.sqrt(np.sum(np.abs(f1_cut[shell])**2))
+    fsc_cut.append(val)
     nri.append(len(masked_shell[0]))
 plt.figure()
 a1 = plt.gca()
 x = np.unique(qbins3d) * qstep * 1e-9
 a1.add_patch(plt.Rectangle(xy=(0, .143), width=x.max(), height=(.5-.143), fc=(.8,)*3))
-a1.plot(x, fsc, label='FSC (3d)')
+a1.plot(x, np.real(fsc), label='plain')
+a1.plot(x, np.real(fsc_cut), label='supported')
 a1.set_xlabel('q = $2\pi/\Delta r$  [nm-1]')
 a1.set_ylabel('Fourier shell correlation')
 a1.set_ylim(0, 1.1)
@@ -126,13 +140,13 @@ resolutions = (2, 5, 8, 10, 15, 12, 20, 30, 50)
 a2.set_xticks([2*np.pi/dr for dr in resolutions])
 a2.set_xticklabels(resolutions)
 a2.set_xlim(a1.get_xlim())
-np.savez('validation.npz', q=x, fsc=fsc, nri=nri)
+np.savez('validation.npz', q=x, fsc=fsc, nri=nri, fsc_cut=fsc_cut)
 #a1.legend()
 
 # rectify the full reconstruction, save and plot
 p, mask = load(folder+'modes_10.h5', N)
 #p = np.flip(p, axis=0)
-p, psize = rectify_sample(p, (dr3, dr1, dr2), 15.0, find_order=False) # x z y
+p, psize = rectify_sample(p, (dr3, dr1, dr2), 15.0, find_order=True) # x z y
 np.savez('rectified.npz', data=p, psize=psize)
 
 # plot along all three axes to understand the aspect ratio

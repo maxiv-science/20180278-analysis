@@ -58,11 +58,15 @@ dr3, dr1, dr2 = (2 * np.pi / q for q in (Q3, Q1, Q2)) # half-period res (pixel s
 p0, mask = load(folder+'modes_0.h5', N, cutoff=.0)
 p1, mask = load(folder+'modes_1.h5', N, cutoff=.0)
 
-# threshold the volumes
+# threshold the volumes to recreate the pynx support.
 p0_cut = np.copy(p0)
 p1_cut = np.copy(p1)
 p0_cut[np.abs(p0) < .25 * np.abs(p0).max()] = 0
 p1_cut[np.abs(p1) < .25 * np.abs(p1).max()] = 0
+
+# find the average between the real-space and fourier-space projections
+p0_mix = (p0 + p0_cut) / 2
+p1_mix = (p1 + p1_cut) / 2
 
 # plot the input data and FT:s
 fig, ax = plt.subplots(ncols=2, nrows=2)
@@ -75,6 +79,8 @@ f0 = np.fft.fftshift(np.fft.fftn(p0))
 f1 = np.fft.fftshift(np.fft.fftn(p1))
 f0_cut = np.fft.fftshift(np.fft.fftn(p0_cut))
 f1_cut = np.fft.fftshift(np.fft.fftn(p1_cut))
+f0_mix = np.fft.fftshift(np.fft.fftn(p0_mix))
+f1_mix = np.fft.fftshift(np.fft.fftn(p1_mix))
 ax[1, 0].imshow(np.log10(np.abs(f0[N//2])))
 ax[1, 1].imshow(np.log10(np.abs(f1[N//2])))
 fig.suptitle('input images and FT:s')
@@ -112,18 +118,27 @@ qbins3d = (q // qstep).astype(int)
 nri = []
 fsc = []
 fsc_cut = []
+fsc_mix = []
 mask[mask == 0] = -1
 for i in np.unique(qbins3d):
     shell = np.where(qbins3d==i)
     masked_shell = np.where((qbins3d * mask)==i)
+    #
     val = np.sum(f0[shell] * f1[shell].conj())
     val /= np.sqrt(np.sum(np.abs(f0[shell])**2))
     val /= np.sqrt(np.sum(np.abs(f1[shell])**2))
     fsc.append(val)
+    #
     val = np.sum(f0_cut[shell] * f1_cut[shell].conj())
     val /= np.sqrt(np.sum(np.abs(f0_cut[shell])**2))
     val /= np.sqrt(np.sum(np.abs(f1_cut[shell])**2))
     fsc_cut.append(val)
+    #
+    val = np.sum(f0_mix[shell] * f1_mix[shell].conj())
+    val /= np.sqrt(np.sum(np.abs(f0_mix[shell])**2))
+    val /= np.sqrt(np.sum(np.abs(f1_mix[shell])**2))
+    fsc_mix.append(val)
+    #
     nri.append(len(masked_shell[0]))
 plt.figure()
 a1 = plt.gca()
@@ -131,6 +146,7 @@ x = np.unique(qbins3d) * qstep * 1e-9
 a1.add_patch(plt.Rectangle(xy=(0, .143), width=x.max(), height=(.5-.143), fc=(.8,)*3))
 a1.plot(x, np.real(fsc), label='plain')
 a1.plot(x, np.real(fsc_cut), label='supported')
+a1.plot(x, np.real(fsc_mix), label='mixed')
 a1.set_xlabel('q = $2\pi/\Delta r$  [nm-1]')
 a1.set_ylabel('Fourier shell correlation')
 a1.set_ylim(0, 1.1)
@@ -140,7 +156,7 @@ resolutions = (2, 5, 8, 10, 15, 12, 20, 30, 50)
 a2.set_xticks([2*np.pi/dr for dr in resolutions])
 a2.set_xticklabels(resolutions)
 a2.set_xlim(a1.get_xlim())
-np.savez('validation.npz', q=x, fsc=fsc, nri=nri, fsc_cut=fsc_cut)
+np.savez('validation.npz', q=x, fsc=fsc, nri=nri, fsc_cut=fsc_cut, fsc_mix=fsc_mix)
 #a1.legend()
 
 # rectify the full reconstruction, save and plot

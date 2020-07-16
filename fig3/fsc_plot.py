@@ -11,6 +11,7 @@ with np.load('data/validation.npz') as dct:
     q = dct['q']
     c = dct['fsc']
     c_cut = dct['fsc_cut']
+    c_mix = dct['fsc_mix']
     nri = dct['nri']
 
 # half-bit threshold
@@ -27,8 +28,8 @@ T = (0.2071 + 1.9102 / np.sqrt(neri)) / (1.2071 + 0.9102 / np.sqrt(neri))
 fig, a1 = plt.subplots(figsize=(1.5,1.5))
 fig.subplots_adjust(left=.25, bottom=.25, right=.97, top=.8)
 
-a1.plot(q, np.real(c))
-a1.plot(q, np.real(c_cut))
+#a1.plot(q, np.real(c))
+a1.plot(q, np.real(c_mix))
 a1.plot(q, T, 'k--')
 a1.set_xlabel('q = $2\pi/\Delta r$  [nm-1]', labelpad=2)
 a1.set_ylabel('Fourier shell correlation', labelpad=2)

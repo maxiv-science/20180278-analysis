@@ -29,13 +29,13 @@ ax[0].set_ylabel('$j$-index', labelpad=2)
 ax[0].set_xticklabels([])
 ax0_ = ax[0].twinx()
 ax0_.set_ylim(np.array((-.5,.5)) * Pjlk.shape[0] * dtheta)
-ax0_.set_ylabel('$\\theta$ (degrees)', labelpad=2)
+ax0_.set_ylabel('$\\delta\\theta$ (degrees)', labelpad=2)
 
 ax[1].set_ylabel('$l$-index', labelpad=2)
 ax[1].set_xlabel('frame number $k$')
 ax1_ = ax[1].twinx()
 ax1_.set_ylim(np.array((-.5,.5)) * Pjlk.shape[1] * domega)
-ax1_.set_ylabel('$\\omega$ (degrees)', labelpad=2)
+ax1_.set_ylabel('$\\delta\\omega$ (degrees)', labelpad=2)
 
 for a_ in (ax[0], ax[1], ax0_, ax1_):
     a_.tick_params(axis='y', which='major', pad=1)

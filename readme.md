@@ -16,6 +16,6 @@ Each particle hit is analyzed in its own folder, where the following scripts are
 * `4_reconstructr.sbatch` does the phasing with PyNX as SLURM jobs, but its pynx commands can be run in a normal terminal with the correct environment.
 * `5_validate and rectify.py` resamples the particle on an orthogonal grid and does the FSV analysis.
 
-In addition, the folder `fig3` contains the scripts for creating the experimental data figure of the paper.
+In addition, the folder `fig2` contains the scripts for creating the figure based on the `body_strain` example from `bcdi-assemble`, while `fig3` contains the scripts for creating the experimental data figure.
 
 These scripts depend on the [bcdi-assemble](https://github.com/maxiv-science/bcdi-assemble) library for assembly, and on [PyNX](http://ftp.esrf.fr/pub/scisoft/PyNX/) for phasing.

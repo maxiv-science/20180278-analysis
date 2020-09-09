@@ -9,13 +9,14 @@ import h5py
 import matplotlib
 matplotlib.rc('font', size=6)
 
-INPUT, OUTPUT = range(2)
+INPUT, OUTPUT, REGULAR = range(3)
 STRAIN = '1.00'
 EXTRA_ROLL = 0 #-1
 
 input_amplitudes, output_amplitudes, input_phases, output_phases = [], [], [], []
+regular_amplitudes, regular_phases = [], []
 
-for WHAT in (INPUT, OUTPUT,):
+for WHAT in (INPUT, OUTPUT, REGULAR,):
 
     # load the data
     theta = 15.0
@@ -43,8 +44,15 @@ for WHAT in (INPUT, OUTPUT,):
         # the pixel size along the third dimension Dmax is an input parameter,
         # adjusting here for comparison with the ground truth.
         dr[0] = dr[0] * .9
+    elif WHAT == REGULAR:
+        with h5py.File('data/modes_%sregular.h5'%(STRAIN.replace('.','')), 'r') as fp:
+            data = fp['entry_1/data_1/data'][0]
+        data = np.flip(data, axis=0)
+        data = np.pad(data, 10, mode='constant', )
+        dr = np.array((5e-09, 4.57e-09, 4.40e-09))
+        dr[0] = dr[0] * .85
     print(data.shape)
-    data, psize = rectify_sample(data, dr, theta, interp=5, find_order=False)
+    data, psize = rectify_sample(data, dr, theta, interp=1, find_order=False)
 #    print('psize = ', psize)
 
     # center the particle and shift the phase
@@ -53,10 +61,15 @@ for WHAT in (INPUT, OUTPUT,):
     com = com.astype(int)
     shift = np.array(data.shape)//2 - com
     data = np.roll(data, shift, axis=(0,1,2))
-    if WHAT == OUTPUT:
+    if WHAT in (OUTPUT, INPUT, REGULAR):
         av = np.mean(np.angle(data[com[0]-2:com[0]+2, com[1]-2:com[1]+2, com[2]-2:com[2]+2, ]))
         data[:] *= np.exp(-1j * av)
         data = np.roll(data, EXTRA_ROLL, axis=0)
+
+    # cut out the good part
+    N = 18
+    a, b, c = data.shape
+    data = data[a//2-N//2:a//2+N//2, b//2-N//2:b//2+N//2, c//2-N//2:c//2+N//2, ]
 
     ### silx 3D plot
     if True:
@@ -74,8 +87,10 @@ for WHAT in (INPUT, OUTPUT,):
         # direction is the line of sight of the camera and up is the direction
         # pointing upward in the screen plane 
         # from experimentation these axes are are [y z x]
-        widget.viewport.camera.extrinsic.setOrientation(direction=[0.9421028 , 0.0316029 , 0.33383173],
-                                                        up=[-0.03702362,  0.99926555,  0.00988633])
+        widget.viewport.camera.extrinsic.setOrientation(#direction=[-0.9421028 , 0.0316029 , 0.33383173],
+                                                        direction=[0 , 0 , 1],
+                                                        #up=[-0.03702362,  0.99926555,  0.00988633])
+                                                        up=[0, 1, 0])
         widget.centerScene()
 
         # add the volume, which will be made complex based on data.dtype
@@ -97,6 +112,13 @@ for WHAT in (INPUT, OUTPUT,):
         cuts = volume.getCutPlanes()
         [cut.setVisible(False) for cut in cuts]
 
+        # clean up some crap
+        volume.setBoundingBoxVisible(False)
+        group = volume.parent()
+        group.setBoundingBoxVisible(False)
+        widget.setOrientationIndicatorVisible(False)
+
+
         window.show()
 
         # Display exception in a pop-up message box
@@ -107,16 +129,11 @@ for WHAT in (INPUT, OUTPUT,):
 
     ### normal slice plot
 
-    # cut out the good part
-    N = 18
-    a, b, c = data.shape
-    data = data[a//2-N//2:a//2+N//2, b//2-N//2:b//2+N//2, c//2-N//2:c//2+N//2, ]
-
     # threshold the volume
     dmax = np.abs(data).max()
 #    print(dmax)
     #data[np.abs(data) < dmax / 3] = np.nan
-    mask = (np.abs(data) > dmax / 5) * 1.
+    mask = (np.abs(data) > dmax / 3) * 1.
     mask[np.where(mask < .5)] = np.nan
 
     w, n= 3+3/8, 4
@@ -136,9 +153,12 @@ for WHAT in (INPUT, OUTPUT,):
         if WHAT == INPUT:
             input_amplitudes.append(np.abs((data)[N//2+offset]))
             input_phases.append(np.angle((data)[N//2+offset]))
-        else:
+        elif WHAT == OUTPUT:
             output_amplitudes.append(np.abs((data)[N//2+offset]))
             output_phases.append(np.angle((data)[N//2+offset]))
+        else:
+            regular_amplitudes.append(np.abs((data)[N//2+offset]))
+            regular_phases.append(np.angle((data)[N//2+offset]))
 
         diff = np.diff(phase, axis=0)
         aim = ax[0, i].imshow(ampl, vmax=dmax*.7, vmin=0, cmap='viridis', extent=exts)
@@ -147,7 +167,7 @@ for WHAT in (INPUT, OUTPUT,):
         sign = {True:'+', False:'-'}[offset>=0]
         ax[0, i].set_title(sign + '%.1f nm'%abs(offset*psize*1e9),
                            pad=1,
-                           fontdict={'fontsize':6})
+                           fontdict={'fontsize':5.5})
         ax[0, i].set_xticks([]); ax[0, i].set_yticks([])
         ax[1, i].set_xticks([]); ax[1, i].set_yticks([])
 
@@ -162,14 +182,38 @@ for WHAT in (INPUT, OUTPUT,):
     ax[0, -1].set_yticks([-25e-9, 25e-9])
     ax[0, -1].set_yticklabels([])
     ax[0, -1].yaxis.tick_right()
-    plt.savefig('particle_plot_%s.png'%{True:'input',False:'output'}[WHAT==INPUT], dpi=600)
+    plt.savefig('particle_plot_%s.png'%{INPUT:'input',OUTPUT:'output',REGULAR:'regular'}[WHAT], dpi=600)
 
 
 # now make difference maps
-fig, ax = plt.subplots(nrows=2, ncols=len(input_phases))
-for i in range(len(input_phases)):
-    output_amplitudes[i] = np.roll(output_amplitudes[i], shift=(1,1), axis=(0,1))
-    ax[0, i].imshow(output_amplitudes[i]/1000-input_amplitudes[i], vmin=-.2, vmax=.2)
-    ax[1, i].imshow(output_phases[i]-input_phases[i], vmin=vmin, vmax=vmax, cmap='jet')
+ext = psize * data.shape[-1] * 1e9
+for i in range(len(output_amplitudes)):
+    output_amplitudes[i] = np.roll(output_amplitudes[i], shift=(1,0), axis=(0,1))
+
+def diff_map(ampl, phase, label):
+    fig, ax = plt.subplots(nrows=2, ncols=len(input_phases), figsize=(6,1.5))
+    pcax = fig.add_axes([.88, .1, .02, .3])
+    acax = fig.add_axes([.88, .6, .02, .3])
+    plt.subplots_adjust(left=.1, right=.86, bottom=.05, top=.95)
+    for i in range(len(input_phases)):
+        aim = ax[0, i].imshow(ampl[i], vmin=-.5, vmax=.5, extent=(-ext/2, ext/2, -ext/2, ext/2))
+        pim = ax[1, i].imshow(phase[i], vmin=vmin, vmax=vmax, cmap='jet', extent=(-ext/2, ext/2, -ext/2, ext/2))
+    plt.colorbar(aim, cax=acax)
+    plt.colorbar(pim, cax=pcax)
+    pcax.set_ylabel('(rad.)')
+    for a in ax.flatten():
+        a.set_xticks([])
+        a.set_yticks([])
+    for a in ax[:, 0]:
+        plt.setp(a, 'yticks', [-30, 30], 'yticklabels', ['0 nm', '60 nm'])
+    plt.savefig('si/%s.pdf'%label)
+
+diff_map(np.array(output_amplitudes)/1000-np.array(input_amplitudes),
+         np.array(output_phases)-np.array(input_phases),
+         'output_vs_input')
+
+diff_map(np.array(output_amplitudes)/1000-np.array(regular_amplitudes)/1300,
+         np.array(output_phases)-np.array(regular_phases),
+         'output_vs_regular')
 
 plt.show()

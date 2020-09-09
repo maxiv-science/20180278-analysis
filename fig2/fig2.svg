@@ -11,11 +11,11 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="3.375in"
-   height="4.75in"
-   viewBox="0 0 85.725001 120.65002"
+   height="4.6999998in"
+   viewBox="0 0 85.725001 119.38"
    version="1.1"
    id="svg8"
-   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
    sodipodi:docname="fig2.svg">
   <defs
      id="defs2">
@@ -3466,8 +3466,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="62.724108"
-     inkscape:cy="220.61538"
+     inkscape:cx="-109.43746"
+     inkscape:cy="292.39761"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -3485,7 +3485,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -3493,36 +3493,36 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-176.34999)">
+     transform="translate(0,-177.61999)">
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:2.82222223px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        x="1.1502721"
-       y="206.84642"
+       y="208.96306"
        id="text210958"><tspan
          sodipodi:role="line"
          id="tspan210956"
          x="1.1502721"
-         y="206.84642"
+         y="208.96306"
          style="font-weight:bold;stroke-width:0.26458332">b</tspan></text>
     <image
-       sodipodi:absref="/home/alex/Dropbox/NanoMAX/assembly_paper/fig2/assembly_plot.png"
+       sodipodi:absref="/mxn/home/alebjo/analysis/20180278-analysis/fig2/assembly_plot.png"
        xlink:href="assembly_plot.png"
-       y="221.32922"
-       x="0.15119092"
-       id="image2700"
-       style="image-rendering:optimizeQuality"
-       preserveAspectRatio="none"
+       width="85.724998"
        height="50.799999"
-       width="85.724998" />
+       preserveAspectRatio="none"
+       style="image-rendering:optimizeQuality"
+       id="image2700"
+       x="0.15119092"
+       y="223.44586" />
     <text
        id="text2178"
-       y="224.83807"
+       y="226.95471"
        x="1.1502721"
        style="font-style:normal;font-weight:normal;font-size:2.82222223px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
          style="font-weight:bold;stroke-width:0.26458332"
-         y="224.83807"
+         y="226.95471"
          x="1.1502721"
          id="tspan2176"
          sodipodi:role="line">c</tspan></text>
@@ -3530,67 +3530,68 @@
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:2.82222223px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        x="1.1502721"
-       y="246.53392"
+       y="248.65056"
        id="text2182"><tspan
          sodipodi:role="line"
          id="tspan2180"
          x="1.1502721"
-         y="246.53392"
+         y="248.65056"
          style="font-weight:bold;stroke-width:0.26458332">d</tspan></text>
     <image
-       sodipodi:absref="/home/alex/Dropbox/NanoMAX/assembly_paper/fig2/particle_plot_output.png"
+       sodipodi:absref="/mxn/home/alebjo/analysis/20180278-analysis/fig2/particle_plot_output.png"
        xlink:href="particle_plot_output.png"
-       width="85.598"
-       height="21.336"
-       preserveAspectRatio="none"
-       style="image-rendering:optimizeQuality"
-       id="image2093"
+       y="274.12335"
        x="0.063500211"
-       y="273.59418" />
+       id="image2093"
+       style="image-rendering:optimizeQuality"
+       preserveAspectRatio="none"
+       height="21.336"
+       width="85.598" />
     <text
        id="text3047"
-       y="274.05042"
+       y="274.57959"
        x="1.1502721"
        style="font-style:normal;font-weight:normal;font-size:2.82222223px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
          style="font-weight:bold;stroke-width:0.26458332"
-         y="274.05042"
+         y="274.57959"
          x="1.1502721"
          id="tspan3045"
          sodipodi:role="line">e</tspan></text>
     <image
-       sodipodi:absref="/home/alex/Dropbox/NanoMAX/assembly_paper/fig2/frames_plot.png"
+       sodipodi:absref="/mxn/home/alebjo/analysis/20180278-analysis/fig2/frames_plot.png"
        xlink:href="frames_plot.png"
-       width="85.347023"
-       height="10.710333"
-       preserveAspectRatio="none"
-       style="image-rendering:optimizeQuality"
-       id="image3627"
+       y="209.84062"
        x="0.37797695"
-       y="207.72398" />
-    <image
-       sodipodi:absref="/home/alex/Dropbox/NanoMAX/assembly_paper/fig2/particle_plot_input.png"
-       xlink:href="particle_plot_input.png"
-       width="85.598"
-       height="21.336"
-       preserveAspectRatio="none"
+       id="image3627"
        style="image-rendering:optimizeQuality"
-       id="image2104"
+       preserveAspectRatio="none"
+       height="10.710333"
+       width="85.347023" />
+    <image
+       sodipodi:absref="/mxn/home/alebjo/analysis/20180278-analysis/fig2/particle_plot_input.png"
+       xlink:href="particle_plot_input.png"
+       y="179.89378"
        x="0.063500211"
-       y="177.77715" />
+       id="image2104"
+       style="image-rendering:optimizeQuality"
+       preserveAspectRatio="none"
+       height="21.336"
+       width="85.598" />
     <text
        id="text2588"
-       y="179.0274"
+       y="181.14404"
        x="1.1502721"
        style="font-style:normal;font-weight:normal;font-size:2.82222223px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
          style="font-weight:bold;stroke-width:0.26458332"
-         y="179.0274"
+         y="181.14404"
          x="1.1502721"
          id="tspan2586"
          sodipodi:role="line">a</tspan></text>
     <g
-       id="g2138">
+       id="g2138"
+       transform="translate(0,2.1166667)">
       <rect
          inkscape:transform-center-x="0.90203481"
          y="182.67545"
@@ -3620,7 +3621,7 @@
     </g>
     <g
        id="g2148"
-       transform="translate(0,95.779196)">
+       transform="translate(0,96.308363)">
       <rect
          style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.13229166;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
          id="rect2140"

@@ -1,4 +1,4 @@
 Produces figure 2 of the paper.
 
-The folder `data` should be a link to the body_strain example folder of the bcdi-assemble repository. The figure was created from bcdi-assemble commit 22ec00f.
+The folder `data` should be a link to the body_strain example folder of the bcdi-assemble repository. The figure was created from bcdi-assemble commit f32cad8.
 

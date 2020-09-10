@@ -11,12 +11,11 @@ matplotlib.rc('font', size=6)
 
 INPUT, OUTPUT, REGULAR = range(3)
 STRAIN = '1.00'
-EXTRA_ROLL = 0 #-1
 
 input_amplitudes, output_amplitudes, input_phases, output_phases = [], [], [], []
 regular_amplitudes, regular_phases = [], []
 
-for WHAT in (INPUT, OUTPUT, REGULAR,):
+for WHAT in (INPUT, OUTPUT, REGULAR):#(INPUT, OUTPUT, REGULAR,):
 
     # load the data
     theta = 15.0
@@ -45,26 +44,51 @@ for WHAT in (INPUT, OUTPUT, REGULAR,):
         # adjusting here for comparison with the ground truth.
         dr[0] = dr[0] * .9
     elif WHAT == REGULAR:
-        with h5py.File('data/modes_%sregular.h5'%(STRAIN.replace('.','')), 'r') as fp:
+        with h5py.File('data/modes_%sregular.h5'%STRAIN, 'r') as fp:
             data = fp['entry_1/data_1/data'][0]
         data = np.flip(data, axis=0)
         data = np.pad(data, 10, mode='constant', )
         dr = np.array((5e-09, 4.57e-09, 4.40e-09))
         dr[0] = dr[0] * .85
     print(data.shape)
-    data, psize = rectify_sample(data, dr, theta, interp=1, find_order=False)
 #    print('psize = ', psize)
+
+    # manually remove phase ramps
+    if WHAT == OUTPUT:
+        inds = np.indices(data.shape)
+        slopes = np.array([.025, -.015, 0])
+        #gradient = slope * np.arange(data.shape[0]).reshape((-1,1,1))
+        gradient = np.sum(inds * slopes.reshape((3, 1, 1, 1)), axis=0)
+        data *= np.exp(1j * gradient)
+    elif WHAT == REGULAR:
+        inds = np.indices(data.shape)
+        slopes = np.array([-.025, -.02, -.01])
+        #gradient = slope * np.arange(data.shape[0]).reshape((-1,1,1))
+        gradient = np.sum(inds * slopes.reshape((3, 1, 1, 1)), axis=0)
+        data *= np.exp(1j * gradient)
 
     # center the particle and shift the phase
     tmp = (np.abs(data) > np.abs(data).max() / 3).astype(int)
     com = np.sum(tmp * np.indices(data.shape), axis=(1,2,3)) / np.sum(tmp)
     com = com.astype(int)
     shift = np.array(data.shape)//2 - com
+    print(com)
     data = np.roll(data, shift, axis=(0,1,2))
     if WHAT in (OUTPUT, INPUT, REGULAR):
-        av = np.mean(np.angle(data[com[0]-2:com[0]+2, com[1]-2:com[1]+2, com[2]-2:com[2]+2, ]))
+        av = np.mean(np.angle(data[com[0], com[1], com[2]]))
         data[:] *= np.exp(-1j * av)
-        data = np.roll(data, EXTRA_ROLL, axis=0)
+        av = np.mean(np.angle(data[com[0]-2:com[0]+2, com[1]-2:com[1]+2, com[2]-2:com[2]+2, ]))        
+        data[:] *= np.exp(-1j * av)
+
+    # manually shift the particle if needed
+    if WHAT == OUTPUT:
+        data = np.roll(data, axis=(1,2), shift=(0,-1))
+        data *= np.exp(1j * .1)
+    elif WHAT == REGULAR:
+        data = np.roll(data, axis=(0,1,2), shift=(-1,-1,-1))
+
+    # now resample on the orthogonal grid
+    data, psize = rectify_sample(data, dr, theta, interp=1, find_order=False)
 
     # cut out the good part
     N = 18
@@ -72,7 +96,7 @@ for WHAT in (INPUT, OUTPUT, REGULAR,):
     data = data[a//2-N//2:a//2+N//2, b//2-N//2:b//2+N//2, c//2-N//2:c//2+N//2, ]
 
     ### silx 3D plot
-    if True:
+    if False:
         # Create a SceneWindow widget in an app
         app = qt.QApplication([])
         window = SceneWindow()
@@ -150,9 +174,10 @@ for WHAT in (INPUT, OUTPUT, REGULAR,):
     for i, offset in enumerate(depths):
         ampl = np.abs((data*mask)[N//2+offset])
         phase = np.angle((data*mask)[N//2+offset])
+        m_ = mask[N//2+offset]
         if WHAT == INPUT:
             input_amplitudes.append(np.abs((data)[N//2+offset]))
-            input_phases.append(np.angle((data)[N//2+offset]))
+            input_phases.append(m_ * np.angle((data)[N//2+offset]))
         elif WHAT == OUTPUT:
             output_amplitudes.append(np.abs((data)[N//2+offset]))
             output_phases.append(np.angle((data)[N//2+offset]))
@@ -184,11 +209,8 @@ for WHAT in (INPUT, OUTPUT, REGULAR,):
     ax[0, -1].yaxis.tick_right()
     plt.savefig('particle_plot_%s.png'%{INPUT:'input',OUTPUT:'output',REGULAR:'regular'}[WHAT], dpi=600)
 
-
 # now make difference maps
 ext = psize * data.shape[-1] * 1e9
-for i in range(len(output_amplitudes)):
-    output_amplitudes[i] = np.roll(output_amplitudes[i], shift=(1,0), axis=(0,1))
 
 def diff_map(ampl, phase, label):
     fig, ax = plt.subplots(nrows=2, ncols=len(input_phases), figsize=(6,1.5))
@@ -212,8 +234,8 @@ diff_map(np.array(output_amplitudes)/1000-np.array(input_amplitudes),
          np.array(output_phases)-np.array(input_phases),
          'output_vs_input')
 
-diff_map(np.array(output_amplitudes)/1000-np.array(regular_amplitudes)/1300,
-         np.array(output_phases)-np.array(regular_phases),
-         'output_vs_regular')
+diff_map(np.array(regular_amplitudes)/4000-np.array(input_amplitudes),
+         np.array(regular_phases)-np.array(input_phases),
+         'regular_vs_input')
 
 plt.show()
